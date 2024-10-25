@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Inteligencia de Casa</title>
+<style>
+  body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    padding-top: 80px;
+    padding-bottom: 60px;
+    background-color: #f4f4f9;
+  }
+
+  /* Header styling */
+  .header {
+    position: fixed;
+    top: 0;
+    width: 100%;
+    height: 80px;
+    background-color: palevioletred;
+    color: white;
+    display: flex;
+    align-items: center;
+    padding: 0 20px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    z-index: 1001;
+  }
+
+  #logo {
+    width: 56px; 
+    height: 56px;
+    border-radius: 8px;
+    margin-right: 20px;
+  }
+
+  #logo-text {
+    font-size: 36px; 
+    font-family: "Kunstler Script", serif;
+    letter-spacing: 3px;
+    font-weight: bold;
+    color:beige;
+  }
+
+  .content {
+    padding: 20px;
+    max-width: 800px;
+    margin: auto;
+    text-align: center;
+  }
+
+  h1 {
+    font-size: 40px;
+    color: #333;
+  }
+
+  #description p {
+    font-size: 18px;
+    color: #555;
+  }
+
+  #map-container {
+    position: relative;
+    width: 100%;
+    height: 500px;
+    overflow: hidden;
+    margin-top: 20px;
+    border: 2px solid #ddd;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  }
+
+  #map {
+    width: 100%;
+    height: 100%;
+    border: none;
+  }
+
+  #status {
+    margin-top: 30px;
+    font-size: 18px;
+    color: #333;
+  }
+
+  button {
+    padding: 10px 20px;
+    margin: 10px 5px;
+    border: none;
+    border-radius: 4px;
+    background-color: palevioletred;
+    color: white;
+    font-size: 16px;
+    cursor: pointer;
+  }
+
+  button:hover {
+    background-color: #c35b7e;
+  }
+</style>
+</head>
+
+<body>
+  <!-- Header section with logo and title -->
+  <div class="header">
+    <img id="logo" src="{{ url_for('static', filename='images/logo.png') }}" alt="Logo">
+    <span id="logo-text">Inteligencia de Casa</span>
+  </div>
+
+  <!-- Main content -->
+  <div class="content">
+    <h1>Map Visualization</h1>
+    <div id="description">
+        <p>This is a map visualization of the data collected from the sensors. The map is updated every 30 seconds.</p>
+    </div>
+
+    <!-- Map display container -->
+    <div id="map-container">
+        <iframe id="map" src="{{ url_for('static', filename='map.html') }}" frameborder="0" onload="updateMap()"></iframe>
+    </div>
+
+    <!-- Status and control buttons -->
+    <div id="status">
+        <p>Chip Status: <span id="chip-status">Unknown</span></p>
+        <button id="chip-on-btn">Turn On Chip</button>
+        <button id="chip-off-btn">Turn Off Chip</button>
+    </div>
+  </div>
+
+<script>
+  // Function to update map data
+  function updateMap() {
+      fetch('/update_map')
+          .then(response => response.text())
+          .then(data => {
+              console.log(data);
+          });
+  }
+
+  // Function to reload the iframe for updated map data
+  function reloadMap() {
+      var iframe = document.getElementById('map');
+      iframe.src = iframe.src;
+  }
+
+  // Function to update chip status
+  function updateChipStatus() {
+      fetch('/chip_status')
+          .then(response => response.text())
+          .then(data => {
+              document.getElementById('chip-status').innerText = data;
+          });
+  }
+
+  // Page load functions
+  window.onload = function () {
+      setInterval(reloadMap, 10000); // Refresh iframe every 10 seconds
+      setInterval(updateChipStatus, 5000); // Update chip status every 5 seconds
+
+      // Initial chip status fetch
+      updateChipStatus();
+
+      // Chip control buttons
+      document.getElementById('chip-on-btn').addEventListener('click', function () {
+          fetch('/start_chipmap');
+      });
+      document.getElementById('chip-off-btn').addEventListener('click', function () {
+          fetch('/stop_chipmap');
+      });
+  };
+</script>
+</body>
+</html>
